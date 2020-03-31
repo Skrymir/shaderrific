@@ -36,4 +36,3 @@ func logEncoderConfig() zapcore.EncoderConfig {
 		EncodeCaller:   zapcore.ShortCallerEncoder,
 	}
 }
-
