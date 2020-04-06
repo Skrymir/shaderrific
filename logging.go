@@ -8,7 +8,7 @@ import (
 
 func configureLogging() *zap.SugaredLogger {
 	w := zapcore.AddSync(&lumberjack.Logger{
-		Filename:   "./shaderiffic.log",
+		Filename:   "shaderrific.log",
 		MaxSize:    100, // megabytes
 		MaxBackups: 3,
 		MaxAge:     15, // days

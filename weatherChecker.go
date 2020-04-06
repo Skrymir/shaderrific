@@ -1,38 +1,54 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"log"
-	"net/http"
+	owm "github.com/briandowns/openweathermap"
+	"time"
 )
 
-func checkWeather() {
-	url := "https://api.weather.gov/gridpoints/MPX/102,68/forecast/hourly"
-	var client http.Client
-	resp, err := client.Get(url)
+func currentWeather(apiKey string) {
+	w, err := owm.NewCurrent("F", "EN", apiKey)
 	if err != nil {
-		log.Fatal(err)
-	}
-	defer resp.Body.Close()
-    var bodyBytes []byte
-	if resp.StatusCode == http.StatusOK {
-		bodyBytes, err = ioutil.ReadAll(resp.Body)
-		if err != nil {
-			log.Fatal(err)
-		}
-		bodyString := string(bodyBytes)
-		logger.Info(bodyString)
-		fmt.Println(bodyString)
+		logger.Fatal(err)
 	}
 
-	var a weather
-	err = json.Unmarshal(bodyBytes, &a)
-	if err != nil {
-		log.Println(err)
+	coord := &owm.Coordinates{
+		Latitude:  44.9041,
+		Longitude: -93.4561,
 	}
-	fmt.Println(a.Context, a.Properties.Periods)
+
+	if err = w.CurrentByCoordinates(coord); err != nil {
+		logger.Fatal(err)
+	}
+
+	var uv *owm.UV
+	uv, err = owm.NewUV(apiKey)
+	if err != nil {
+		logger.Fatal(err)
+	}
+
+	if err = uv.Current(coord); err != nil {
+		logger.Fatal(err)
+	}
+
+	wd := weatherData{
+		Sunrise:     time.Unix(int64(w.Sys.Sunrise), 0),
+		Sunset:      time.Unix(int64(w.Sys.Sunset), 0),
+		Temperature: float32(w.Main.Temp),
+		Conditions:  w.Weather[0].Main,
+		UVIndex:     float32(uv.Value),
+	}
+
+	fmt.Printf("%+v\n", wd)
+	logger.Infof("%+v\n", wd)
+	logger.Infof("%+v\n", w)
+
 }
 
-
+type weatherData struct {
+	Sunrise     time.Time
+	Sunset      time.Time
+	Temperature float32
+	Conditions  string
+	UVIndex     float32
+}

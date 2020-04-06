@@ -2,48 +2,53 @@ package main
 
 import (
 	"fmt"
-	owm "github.com/briandowns/openweathermap"
 	"github.com/jinzhu/configor"
+	"time"
 )
 
 func main() {
 	_ = configor.Load(&Config, "config.yml")
-	w1(Config.ApiKey)
+	fmt.Printf("%s", Config.HubIp)
+	a := allSadeData(Config.HubIp)
+	fmt.Println(a)
+	a = allSceneData(Config.HubIp)
+	fmt.Println(a)
+
+}
+
+func main3() {
+	_ = configor.Load(&Config, "config.yml")
+	ticker := time.NewTicker(15 * time.Minute)
+	fmt.Println("Starting weather monitoring...")
+	done := make(chan bool)
+	go func() {
+		for {
+			select {
+			case <-done:
+				return
+			case <-ticker.C:
+				currentWeather(Config.ApiKey)
+			}
+		}
+	}()
+
+	time.Sleep(24 * time.Hour)
+	ticker.Stop()
+	done <- true
+	fmt.Println("Ticker stopped")
+
+}
+
+func morningTrigger() {
+	// start a sunrise, check weather, if !cloudy close shades, end
+	// if cloudy check every 15 mins.  If !cloudy close shades, end
+	// stop ticker at time, open shades
 }
 
 var logger = configureLogging()
 
-func w1(apiKey string) {
-	w, err := owm.NewCurrent("F", "EN", apiKey) // (internal - OpenWeatherMap reference for kelvin) with English output
-	if err != nil {
-		logger.Fatal(err)
-	}
-
-	coord := &owm.Coordinates{
-		Latitude:  44.9041,
-		Longitude: -93.4561,
-	}
-
-	if err = w.CurrentByCoordinates(coord); err != nil {
-		logger.Fatal(err)
-	}
-
-	fmt.Printf("%+v\n", w)
-
-	uv, err := owm.NewUV(apiKey)
-	if err != nil {
-		logger.Fatal(err)
-	}
-
-	if err = uv.Current(coord); err != nil {
-		logger.Fatal(err)
-	}
-
-	fmt.Printf("%+v\n", uv)
-
-}
-
 var Config = struct {
-	APPName string `default:"twcPoller"`
+	APPName string `default:"shaderrific"`
 	ApiKey  string
+	HubIp   string
 }{}
