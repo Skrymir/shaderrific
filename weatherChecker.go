@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func currentWeather(apiKey string) {
+func currentWeather(apiKey string) weatherData {
 	w, err := owm.NewCurrent("F", "EN", apiKey)
 	if err != nil {
 		logger.Fatal(err)
@@ -37,12 +37,14 @@ func currentWeather(apiKey string) {
 		Temperature: float32(w.Main.Temp),
 		Conditions:  w.Weather[0].Main,
 		UVIndex:     float32(uv.Value),
+		Clouds:      w.Clouds.All,
 	}
 
 	fmt.Printf("%+v\n", wd)
 	logger.Infof("%+v\n", wd)
 	logger.Infof("%+v\n", w)
 
+	return wd
 }
 
 type weatherData struct {
@@ -51,4 +53,5 @@ type weatherData struct {
 	Temperature float32
 	Conditions  string
 	UVIndex     float32
+	Clouds      int
 }
