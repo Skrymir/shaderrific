@@ -75,6 +75,7 @@ func afternoonTask() {
 		fmt.Println("Ending Afternoon Task: Time Expired")
 		logger.Info("Ending Afternoon Task: Time Expired")
 		gocron.Remove(afternoonTask)
+		return
 	}
 
 	w := currentWeather(Config.ApiKey)
