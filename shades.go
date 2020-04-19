@@ -8,7 +8,7 @@ import (
 const (
 	frontOpenSceneId  = "36493"
 	frontCloseSceneId = "41163"
-	backOpenSceneId   = "35073"
+	backOpenSceneId   = "20962"
 	backCloseSceneId  = "33825"
 	//frontFullCloseSceneId = "35073"
 	//backFullCloseSceneId  = "3407"

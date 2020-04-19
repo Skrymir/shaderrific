@@ -31,8 +31,8 @@ func setupDay() {
 	sunset = w.Sunset
 	morningStartTime := sunrise.Add(time.Duration(1) * time.Hour)
 	afternoonStartTime := sunset.Add(time.Duration(-6) * time.Hour)
-	openFrontTime := sunrise.Add(time.Duration(4) * time.Hour)
-	openBackTime := sunset.Add(time.Duration(-30) * time.Minute)
+	openFrontTime := sunrise.Add(time.Duration(6) * time.Hour)
+	openBackTime := sunset.Add(time.Duration(-10) * time.Minute)
 	err := gocron.Every(15).Minutes().From(&morningStartTime).Do(morningTask)
 	if err != nil {
 		logger.Warn("Error in morning task", err)
@@ -62,35 +62,41 @@ func morningTask() {
 	w := currentWeather(Config.ApiKey)
 	if w.Clouds < 70 {
 		frontClose()
+		fmt.Println("Ending Morning Task: Closed shades")
 		logger.Info("Ending Morning Task: Closed shades")
 		gocron.Remove(morningTask)
 		return
 	}
+	fmt.Println("Morning task run: noop")
 }
 
 func afternoonTask() {
-	if time.Now().After(sunset.Add(time.Duration(1) * time.Hour)) {
-		backClose()
+	if time.Now().After(sunset.Add(time.Duration(-1) * time.Hour)) {
+		fmt.Println("Ending Afternoon Task: Time Expired")
 		logger.Info("Ending Afternoon Task: Time Expired")
 		gocron.Remove(afternoonTask)
 	}
 
 	w := currentWeather(Config.ApiKey)
 	if w.Clouds < 70 {
-		allSceneData(Config.HubIp)
+		backClose()
+		fmt.Println("Ending Afternoon Task: Closed shades")
 		logger.Info("Ending Afternoon Task: Closed shades")
 		gocron.Remove(afternoonTask)
 		return
 	}
+	fmt.Println("Afternoon task run: noop")
 }
 
 func openFront() {
+	fmt.Println("Opening front shades")
 	logger.Info("Opening front shades")
 	frontOpen()
 	gocron.Remove(openFront)
 }
 
 func openBack() {
+	fmt.Println("Opening back shades")
 	logger.Info("Opening back shades")
 	backOpen()
 	gocron.Remove(openBack)
